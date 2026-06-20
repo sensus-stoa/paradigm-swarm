@@ -631,5 +631,5 @@ Experimental validation across 18 experimental configurations demonstrates that 
 
 ---
 
-*Code and experiments available at: https://github.com/[anonymous]/paradigm-swarm*
-*Contact: [anonymous]*
+*Code and experiments available at: https://github.com/sensus-stoa/paradigm-swarm*
+*Contact: dolgov-ev@ranepa.ru*

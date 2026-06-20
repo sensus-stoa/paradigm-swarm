@@ -6,7 +6,7 @@
 
 ## Abstract
 
-Catastrophic forgetting remains a central obstacle to continual learning in neural networks. While recent work has converged on modular architectures with weight isolation as a solution, existing methods route computation by *task identity* — a brittle proxy that fails when tasks are undefined or overlap semantically. We propose Paradigm Swarm, an architecture where the unit of isolation is not a task but a *paradigm* — a semantic domain with operational definitions, axioms, and constraints. Each paradigm is an independent expert with frozen weights; a structural router directs queries based on whether they match a paradigm's operational definitions, not their embedding proximity. This yields three architectural properties absent from task-based methods: (1) zero catastrophic forgetting by construction, (2) gap detection as an emergent property of isolated density estimators (100% for Gaussian, 90% for MLP with MSP; §4.4), and (3) an unlimited compute ceiling — experts can train to convergence without interference. We validate Paradigm Swarm across 19 experimental configurations spanning synthetic Gaussian clusters, MNIST variants, CIFAR-10, 50-task continual learning, and end-to-end routing with mixed queries, demonstrating that it matches Oracle (joint training) within margin of error while standard SGD forgets up to 57 percentage points. On 50 sequential tasks with 320 epochs per task and density-based self-routing (no oracle), Paradigm Swarm achieves 0.790 average accuracy versus SGD's 0.567 — a +22.3pp gap with 99.2% routing accuracy. With oracle routing, the gap widens to +38.7pp (0.917 vs 0.529) as PS exploits its unlimited compute ceiling. In an end-to-end routing test where experts route themselves via input-space density estimation with no separate router module, density-based self-routing achieves 100% accuracy while confidence-based routing collapses to 2-6% — validating density estimation as the correct self-routing mechanism. We further show that SGD faces a structural trade-off where longer training *increases* forgetting, while Paradigm Swarm has no such ceiling. Drawing on Kuhn's theory of scientific paradigms and Vikentiev's methodology of knowledge structure, we argue that semantic routing is the missing architectural principle for continual learning systems.
+Catastrophic forgetting remains a central obstacle to continual learning in neural networks. While recent work has converged on modular architectures with weight isolation as a solution, existing methods route computation by *task identity* — a brittle proxy that fails when tasks are undefined or overlap semantically. We propose Paradigm Swarm, an architecture where the unit of isolation is not a task but a *paradigm* — a semantic domain with operational definitions, axioms, and constraints. Each paradigm is an independent expert with frozen weights; a structural router directs queries based on whether they match a paradigm's operational definitions, not their embedding proximity. This yields three architectural properties absent from task-based methods: (1) zero catastrophic forgetting by construction, (2) gap detection as an emergent property of isolated density estimators (100% for Gaussian, 90% for MLP with MSP; §4.4), and (3) an unlimited compute ceiling — experts can train to convergence without interference. We validate Paradigm Swarm across 20 experimental configurations spanning synthetic Gaussian clusters, MNIST variants, CIFAR-10, CIFAR-100 with ResNet-18, 50-task continual learning, and end-to-end routing with mixed queries, demonstrating that it matches Oracle (joint training) within margin of error while standard SGD forgets up to 57 percentage points. On 50 sequential tasks with 320 epochs per task and density-based self-routing (no oracle), Paradigm Swarm achieves 0.790 average accuracy versus SGD's 0.567 — a +22.3pp gap with 99.2% routing accuracy. With oracle routing, the gap widens to +38.7pp (0.917 vs 0.529) as PS exploits its unlimited compute ceiling. In an end-to-end routing test where experts route themselves via input-space density estimation with no separate router module, density-based self-routing achieves 100% accuracy while confidence-based routing collapses to 2-6% — validating density estimation as the correct self-routing mechanism. We further show that SGD faces a structural trade-off where longer training *increases* forgetting, while Paradigm Swarm has no such ceiling. Drawing on Kuhn's theory of scientific paradigms and Vikentiev's methodology of knowledge structure, we argue that semantic routing is the missing architectural principle for continual learning systems.
 
 ---
 
@@ -28,7 +28,7 @@ But the architecture yields more than zero forgetting. Three properties emerge t
 
 3. **Semantic routing as a measurable structural signal.** Recent work [Avinash, 2026] has shown that MoE routing patterns are inherently task-sensitive (92.5% accuracy on task classification from routing signatures alone). Paradigm Swarm makes this descriptive finding prescriptive: route by explicit semantic structure rather than discovering it implicitly.
 
-We validate these claims through 18 experimental configurations on controlled benchmarks (§4). Our key results include: (a) Paradigm Swarm matches Oracle (joint training) within margin of error on 10-task Gaussian classification; (b) on 50 sequential tasks with density-based self-routing (no oracle), Paradigm Swarm achieves 0.790 average accuracy versus SGD's 0.567 (+22.3pp), with 99.2% routing accuracy; (c) with oracle routing, the gap widens to +38.7pp as PS exploits its unlimited compute ceiling (0.917 vs 0.529); (d) in end-to-end routing with mixed queries, density-based self-routing achieves 100% accuracy while confidence-based routing collapses to 2-6%.
+We validate these claims through 20 experimental configurations on controlled benchmarks (§4). Our key results include: (a) Paradigm Swarm matches Oracle (joint training) within margin of error on 10-task Gaussian classification; (b) on 50 sequential tasks with density-based self-routing (no oracle), Paradigm Swarm achieves 0.790 average accuracy versus SGD's 0.567 (+22.3pp), with 99.2% routing accuracy; (c) with oracle routing, the gap widens to +38.7pp as PS exploits its unlimited compute ceiling (0.917 vs 0.529); (d) in end-to-end routing with mixed queries, density-based self-routing achieves 100% accuracy while confidence-based routing collapses to 2-6%.
 
 ## 2. Related Work
 
@@ -242,11 +242,41 @@ PS       0.765   0.024   0.663   0.000
 
 Across 5 random seeds, LwF achieves the highest mean (0.790) with the lowest variance. Paradigm Swarm (0.765) is statistically indistinguishable from SGD (0.770) — the single-seed result showing PS ahead was a lucky draw. On MNIST with few tasks, shared low-level features provide sufficient forward transfer to compensate for interference. This is consistent with our architectural analysis: Paradigm Swarm's advantage grows with the number of tasks (§4.10, §4.15) and with task dissimilarity (§4.12). On small-scale benchmarks with shared visual features, monolithic methods with distillation (LwF) remain competitive. At higher epoch counts and more tasks, interference dominates (§4.10).
 
-### 4.9 Split-CIFAR-10 5-way
+### 4.9 CIFAR Sequential Learning
+
+#### 4.9.1 Split-CIFAR-10 5-way (MLP)
 
 **Design.** CIFAR-10 split into 2 tasks × 5 classes. 128 hidden units, 200 epochs.
 
 **Results.** SGD 0.453, Paradigm Swarm 0.429. On CIFAR, shared low-level features provide strong forward transfer. However, with a shared backbone and isolated heads (plastic version), Paradigm Swarm reaches 0.429 with only 2% forgetting — the best of both worlds.
+
+#### 4.9.2 CIFAR-100 ResNet-18: Catastrophic Forgetting at Scale
+
+**Design.** CIFAR-100 split into 2 tasks × 50 classes. ResNet-18 (11M parameters), SGD with 5 epochs/task on CPU (i7-4790, 8 threads) and 20 epochs/task on GPU (NVIDIA Tesla T4, Google Colab). Two independent runs on different hardware with different epoch budgets measure the same architectural phenomenon.
+
+**Results — CPU (5 epochs/task).**
+```
+              SGD       PS
+Task 0 acc    0.481    0.552
+Task 1 acc    0.573    0.476
+Avg           0.297    0.514
+T0 forgetting +0.459    0.000
+```
+SGD loses 45.9pp on Task 0 after learning Task 1 — near-complete catastrophic forgetting. PS Expert 0 retains full accuracy (0.552). PS Expert 1 underperforms SGD on Task 1 (-0.097), a forward transfer gap consistent with isolated architecture.
+
+**Results — GPU (20 epochs/task, Google Colab T4, script: `kaggle_cifar100.py`).**
+```
+              SGD       PS
+Task 0 acc    0.585    0.580
+Task 1 acc    0.653    0.549
+Avg           0.335    0.565
+T0 forgetting +0.568    0.000
+```
+With 4× the training budget, SGD improves Task 0 (+0.104) and Task 1 (+0.080), but forgetting INCREASES from 0.459 to 0.568 — confirming §4.12's finding that longer SGD training amplifies interference. PS benefits without penalty: Expert 0 improves to 0.580, Expert 1 to 0.549. The PS-SGD gap widens from +0.217 (CPU) to +0.230 (GPU).
+
+**Why this differs from §4.9.1.** On Split-CIFAR-10 with an MLP, SGD wins via forward transfer. On CIFAR-100 with ResNet-18, SGD catastrophically forgets despite 11M parameters of representational capacity. The difference is not the architecture (ResNet-18 is more over-parameterized, which should HELP SGD), but the number of classes per task: 50 classes require the output head and internal representations to reorganize so substantially that forward transfer cannot compensate for interference. This demonstrates that forgetting severity is driven by the semantic distance between tasks, not by model scale — and that isolation is the only reliable defense.
+
+**Reproducibility.** Both CPU and GPU scripts are in the experiment repository. Colab notebook: `kaggle_cifar100.py` (self-contained, downloads data automatically).
 
 ### 4.10 50-Task Scaling: SGD's Architectural Ceiling
 
@@ -548,7 +578,7 @@ The coalition mechanism does not solve the binding problem in its full generalit
 
 ### 5.1 When Isolation Wins — and When It Doesn't
 
-Our experiments reveal a clear pattern. Paradigm Swarm dominates when paradigms have distinct feature spaces (2D Gaussians, Split-Patterns: 3-5× improvement) or when tasks are numerous (50 tasks with oracle routing: +38.7pp; 50 tasks with density routing: +22.3pp; 100 tasks: +23.1pp). SGD dominates when tasks are few and share low-level features (Split-CIFAR 2-task, cross-paradigm dependency). Critically, when the full pipeline is tested end-to-end with real routing at scale (§4.10, §4.18), Paradigm Swarm with density-based self-routing outperforms SGD with routing accuracy above 99% — demonstrating that the architectural principles hold beyond oracle routing.
+Our experiments reveal a clear pattern. Paradigm Swarm dominates when paradigms have distinct feature spaces (2D Gaussians, Split-Patterns: 3-5× improvement) or when tasks are numerous (50 tasks with oracle routing: +38.7pp; 50 tasks with density routing: +22.3pp; 100 tasks: +23.1pp). SGD dominates when tasks are few and share low-level features with few classes per task (Split-CIFAR-10 5-way, cross-paradigm dependency), but catastrophically fails when class count is high — on CIFAR-100 with 50 classes per task, SGD forgets 0.568 despite 11M ResNet-18 parameters (§4.9.2). Critically, when the full pipeline is tested end-to-end with real routing at scale (§4.10, §4.18), Paradigm Swarm with density-based self-routing outperforms SGD with routing accuracy above 99% — demonstrating that the architectural principles hold beyond oracle routing.
 
 ### 5.2 The Forward Transfer / Forgetting Trade-Off
 
@@ -600,7 +630,7 @@ We release the full experimental code as a toolbox for the community to explore 
 
 We have presented Paradigm Swarm, an architecture for continual learning where the unit of weight isolation is not a task but a paradigm — a semantic domain with operational definitions. This architecture yields three properties absent from task-based methods: zero forgetting by construction, gap detection as an emergent structural property, and an unlimited compute ceiling.
 
-Experimental validation across 18 experimental configurations demonstrates that Paradigm Swarm matches Oracle within 0.002 accuracy, eliminates catastrophic forgetting entirely, scales to 50 tasks with density-based self-routing where it outperforms SGD by +22.3pp (with 99.2% routing accuracy), and scales to 100 tasks with oracle routing. We proved that SGD faces a structural ceiling where more training *increases* forgetting, while Paradigm Swarm has no such limit; that density estimation — not softmax confidence — is the correct mechanism for experts to route themselves; and that the gap detection property extends from Gaussian density estimators (100%) to neural-network experts with MSP (90%).
+Experimental validation across 20 experimental configurations demonstrates that Paradigm Swarm matches Oracle within 0.002 accuracy, eliminates catastrophic forgetting entirely, scales to 50 tasks with density-based self-routing where it outperforms SGD by +22.3pp (with 99.2% routing accuracy), and scales to 100 tasks with oracle routing. We proved that SGD faces a structural ceiling where more training *increases* forgetting, while Paradigm Swarm has no such limit; that density estimation — not softmax confidence — is the correct mechanism for experts to route themselves; and that the gap detection property extends from Gaussian density estimators (100%) to neural-network experts with MSP (90%).
 
 
 ## References

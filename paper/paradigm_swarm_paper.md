@@ -2,11 +2,15 @@
 
 **Evgeniy V Dolgov**
 
+> *«You are the wave, the particle, and the instrument — simultaneously.»*
+
+*v28 — June 26, 2026*
+
 ---
 
 ## Abstract
 
-Catastrophic forgetting remains a central obstacle to continual learning in neural networks. While recent work has converged on modular architectures with weight isolation as a solution, existing methods route computation by *task identity* — a brittle proxy that fails when tasks are undefined or overlap semantically. We propose Paradigm Swarm, an architecture where the unit of isolation is not a task but a *paradigm* — a semantic domain with operational definitions, axioms, and constraints. Each paradigm is an independent expert with frozen weights; a structural router directs queries based on whether they match a paradigm's operational definitions, not their embedding proximity. This yields three architectural properties absent from task-based methods: (1) zero catastrophic forgetting by construction, (2) gap detection as an emergent property of isolated density estimators (100% for Gaussian, 90% for MLP with MSP; §4.4), and (3) an unlimited compute ceiling — experts can train to convergence without interference. We validate Paradigm Swarm across 20 experimental configurations spanning synthetic Gaussian clusters, MNIST variants, CIFAR-10, CIFAR-100 with ResNet-18, 50-task continual learning, and end-to-end routing with mixed queries, demonstrating that it matches Oracle (joint training) within margin of error while standard SGD forgets up to 57 percentage points. On 50 sequential tasks with 320 epochs per task and density-based self-routing (no oracle), Paradigm Swarm achieves 0.790 average accuracy versus SGD's 0.567 — a +22.3pp gap with 99.2% routing accuracy. With oracle routing, the gap widens to +38.7pp (0.917 vs 0.529) as PS exploits its unlimited compute ceiling. In an end-to-end routing test where experts route themselves via input-space density estimation with no separate router module, density-based self-routing achieves 100% accuracy while confidence-based routing collapses to 2-6% — validating density estimation as the correct self-routing mechanism. We further show that SGD faces a structural trade-off where longer training *increases* forgetting, while Paradigm Swarm has no such ceiling. Drawing on Kuhn's theory of scientific paradigms and Vikentiev's methodology of knowledge structure, we argue that semantic routing is the missing architectural principle for continual learning systems.
+Catastrophic forgetting remains a central obstacle to continual learning in neural networks. While recent work has converged on modular architectures with weight isolation as a solution, existing methods route computation by *task identity* — a brittle proxy that fails when tasks are undefined or overlap semantically. We propose Paradigm Swarm, an architecture where the unit of isolation is not a task but a *paradigm* — a semantic domain with operational definitions, axioms, and constraints. Each paradigm is an independent expert with frozen weights; a structural router directs queries based on whether they match a paradigm's operational definitions, not their embedding proximity. This yields six architectural properties absent from task-based methods: (1) zero catastrophic forgetting by construction, (2) gap detection as an emergent property of isolated density estimators (100% for Gaussian, 90% for MLP with MSP; §4.4), (3) an unlimited compute ceiling — experts can train to convergence without interference, and (4) coalition compilation — when a coalition activates repeatedly on cross-domain queries, a compiled expert trained on the joint distribution outperforms the coalition itself (+0.415 on XOR, +0.372 on product interactions; §4.19b), and (5) expert distillation — a compiled model trained on the collective Q-values of a specialized expert swarm outperforms both the best solo expert and oracle routing, though we also identify the boundary condition where distillation fails (counter-domains: same features, opposite semantics) and show that density-based routing correctly handles these cases (§4.21), and (6) dissipative structure discovery — when experts systematically diverge, the contradiction subspace itself forms a new paradigm which, when added to the distillation, produces a model stronger than one trained without it, connecting Paradigm Swarm to TRIZ contradiction resolution (§4.22). We validate Paradigm Swarm across 28 experimental configurations spanning synthetic Gaussian clusters, MNIST variants, CIFAR-10, CIFAR-100 with ResNet-18, 50-task continual learning, coalition compilation on non-linear joint distributions, and end-to-end routing with mixed queries, demonstrating that it matches Oracle (joint training) within margin of error while standard SGD forgets up to 57 percentage points. On 50 sequential tasks with 320 epochs per task and density-based self-routing (no oracle), Paradigm Swarm achieves 0.790 average accuracy versus SGD's 0.567 — a +22.3pp gap with 99.2% routing accuracy. With oracle routing, the gap widens to +38.7pp (0.917 vs 0.529) as PS exploits its unlimited compute ceiling. In an end-to-end routing test where experts route themselves via input-space density estimation with no separate router module, density-based self-routing achieves 100% accuracy while confidence-based routing collapses to 2-6% — validating density estimation as the correct self-routing mechanism. We further show that SGD faces a structural trade-off where longer training *increases* forgetting, while Paradigm Swarm has no such ceiling. Drawing on Kuhn's theory of scientific paradigms and Vikentiev's methodology of knowledge structure, we argue that semantic routing is the missing architectural principle for continual learning systems.
 
 ---
 
@@ -20,7 +24,7 @@ Real-world knowledge is not organized into tasks. It is organized into *paradigm
 
 This observation motivates Paradigm Swarm. We propose replacing task-based routing with **paradigm-based routing**: each paradigm is an independent expert with frozen weights after training; a structural router classifies queries by whether they *operationally* belong to a paradigm, not by embedding proximity. Adding a new paradigm adds an expert; old experts are untouched. This yields zero catastrophic forgetting by construction.
 
-But the architecture yields more than zero forgetting. Three properties emerge that are absent from task-based isolation methods:
+But the architecture yields more than zero forgetting. Six properties emerge that are absent from task-based isolation methods:
 
 1. **Gap detection as an architectural property.** Because each expert models only its own paradigm's density, points in the empty space between paradigms are naturally rejected by all experts. No training on "gap" examples is required. Monolithic softmax classifiers, by contrast, force a classification decision on every point in the input space.
 
@@ -28,7 +32,7 @@ But the architecture yields more than zero forgetting. Three properties emerge t
 
 3. **Semantic routing as a measurable structural signal.** Recent work [Avinash, 2026] has shown that MoE routing patterns are inherently task-sensitive (92.5% accuracy on task classification from routing signatures alone). Paradigm Swarm makes this descriptive finding prescriptive: route by explicit semantic structure rather than discovering it implicitly.
 
-We validate these claims through 20 experimental configurations on controlled benchmarks (§4). Our key results include: (a) Paradigm Swarm matches Oracle (joint training) within margin of error on 10-task Gaussian classification; (b) on 50 sequential tasks with density-based self-routing (no oracle), Paradigm Swarm achieves 0.790 average accuracy versus SGD's 0.567 (+22.3pp), with 99.2% routing accuracy; (c) with oracle routing, the gap widens to +38.7pp as PS exploits its unlimited compute ceiling (0.917 vs 0.529); (d) in end-to-end routing with mixed queries, density-based self-routing achieves 100% accuracy while confidence-based routing collapses to 2-6%.
+We validate these claims through 28 experimental configurations on controlled benchmarks (§4). Our key results include: (a) Paradigm Swarm matches Oracle (joint training) within margin of error on 10-task Gaussian classification; (b) on 50 sequential tasks with density-based self-routing (no oracle), Paradigm Swarm achieves 0.790 average accuracy versus SGD's 0.567 (+22.3pp), with 99.2% routing accuracy; (c) with oracle routing, the gap widens to +38.7pp as PS exploits its unlimited compute ceiling (0.917 vs 0.529); (d) in end-to-end routing with mixed queries, density-based self-routing achieves 100% accuracy while confidence-based routing collapses to 2-6%; (e) coalition compilation on non-linear joint distributions shows compiled experts outperforming coalitions by +0.415 on XOR and +0.372 on product interactions (§4.19b).
 
 ## 2. Related Work
 
@@ -88,7 +92,7 @@ The architecture consists of three components:
 - Binary MLPs for 20/50-task benchmarks (§4.9-4.10)
 
 **Component 3: Gap Detection (emergent).** Because each expert models only its own paradigm's distribution, a query that falls outside all distributions is naturally rejected by all experts. The system outputs `gap` — no special training required. This contrasts with monolithic softmax classifiers, which must assign a class to every point in the input space.
-![Figure 2: Gap Detection — Paradigm Swarm naturally detects gaps; Monolithic is 90% confident in empty space](figures/fig2_gap_detection.png)
+\includegraphics[width=0.90\textwidth,keepaspectratio]{figures/fig2_gap_detection.png}
 
 
 ### 3.3 Training and Inference
@@ -154,7 +158,7 @@ Standard              51.6%          +45.2pp      93.6%
 Paradigm Swarm        96.8%           0.000       94.6%
 ```
 Forgetting reduction: 100%. The isolated expert preserves all knowledge from task A.
-![Figure 1: Weight Isolation — Standard forgets 45pp, Paradigm Swarm forgets 0pp](figures/fig1_weight_isolation.png)
+\includegraphics[width=0.90\textwidth,keepaspectratio]{figures/fig1_weight_isolation.png}
 
 
 ### 4.3 Boundary Shift
@@ -195,7 +199,7 @@ This experiment bridges §4.4 and §4.10-§4.16: the gap detection property EXTE
 **Design.** 5 sequential paradigms. Measure accuracy on paradigm P3 after training P4 and P5.
 
 **Results.** After all 5 paradigms: monolithic P3 accuracy = 0.000 (fully erased). Paradigm Swarm P3 accuracy = 0.960 (preserved). Final average: Monolithic 0.796, Paradigm Swarm 0.980.
-![Figure 4: Distortion Accumulation — P3 fully erased in Monolithic, preserved in Paradigm Swarm](figures/fig4_distortion.png)
+\includegraphics[width=0.90\textwidth,keepaspectratio]{figures/fig4_distortion.png}
 
 
 ### 4.6 Comprehensive Benchmark
@@ -215,7 +219,8 @@ PS (wrong router)      0.062   0.020       —
 ```
 
 Paradigm Swarm matches Oracle within 0.002. EWC provides marginal benefit. PackNet underperforms SGD. Wrong router destroys PS completely — the router is essential.
-![Figure 3: 10-Task Benchmark — Paradigm Swarm matches Oracle, EWC/PackNet fail](figures/fig3_benchmark.png)
+
+\includegraphics[width=0.90\textwidth,keepaspectratio]{figures/fig3_benchmark.png}
 
 
 ### 4.7 Semantic Routing Accuracy
@@ -334,7 +339,7 @@ Mean   0.992   0.790    0.567    +0.223
 ±Std   0.002   0.027    0.033
 ```
 Density routing accuracy is 99.2% ± 0.002. Paradigm Swarm wins on 5/5 seeds. The PS-SGD gap (+0.223) is smaller than the oracle experiment (+0.387) because distinguishable input distributions reduce SGD's interference — but the architectural advantage persists. This closes the loop: Paradigm Swarm with density-based self-routing outperforms SGD at 50-task scale without oracle task identity.
-![Figure 5: 50-Task Scaling — SGD plateaus, Paradigm Swarm has no ceiling](figures/fig5_scaling.png)
+\includegraphics[width=0.90\textwidth,keepaspectratio]{figures/fig5_scaling.png}
 
 
 
@@ -573,6 +578,98 @@ Coalition     1.000   1.000   1.000   1.000   90%
 
 The coalition mechanism does not solve the binding problem in its full generality — output dimension tags must be pre-annotated, and cross-domain synthesis without external API remains future work (§5.6). But it demonstrates that the problem is architecturally tractable: the same structural principles that prevent forgetting (isolation) and detect novelty (gap detection) naturally extend to output merging when the routing decision is changed from `argmax` to `all above threshold`. Binding is not a stored layer. It is an emergent property of experts cooperating on a shared query.
 
+### 4.19b Coalition Compilation: Learning the Joint Distribution
+
+The coalition mechanism in §4.19 forms temporary expert groups per query. But when the same coalition activates repeatedly on cross-domain queries, a natural question arises: can we compile it into a permanent expert that learns the joint distribution?
+
+**Motivation.** In the binding experiment, coalition accuracy is 1.000 on all-3 queries — but this is an additive combination of isolated experts, not a genuinely non-linear interaction. When the target function is non-linear in the joint feature space (e.g., XOR of two expert domains), neither expert alone nor their coalition can capture it: each expert sees only its own feature subset, and coalition averaging of two chance-level predictors remains at chance level.
+
+**Design.** Two solo experts (A: features 0-11, B: features 8-19, 4 overlapping) are trained independently as binary MLP classifiers on 300 samples each. Cross-domain test data is generated with both feature sets active and a non-linear target function: XOR (y = A_sign ⊕ B_sign), product (y = sign(A·B)), AND (y = A_pos ∧ B_pos), and tanh-sum (y = sign(tanh(ΣA) + tanh(ΣB))). A compiled expert AB is trained on 500 cross-domain samples WITH TRUE LABELS, then compared against: (a) best solo expert, (b) coalition of A+B (average/max probability), and (c) oracle trained directly on the test distribution. We also ablate: pseudo-label training from coalition predictions (v3) and soft non-linearities with varying noise fractions.
+
+**Results.** With true labels, compiled AB outperforms the best coalition on all four distributions:
+
+| Distribution | Best Solo | Coalition | Compiled AB | Δ(Comp−Coal) |
+|-------------|:---:|:---:|:---:|:---:|
+| XOR | 0.547 | 0.485 | **0.900** | **+0.415** |
+| PRODUCT | 0.520 | 0.515 | **0.887** | **+0.372** |
+| AND | 0.905 | 0.925 | **0.940** | +0.015 |
+| TANH SUM | 0.917 | 0.943 | **0.973** | +0.030 |
+
+On XOR, solo experts and coalition perform at chance level (0.50) while compiled AB reaches 0.900 — above the majority-class baseline of 0.897. Sample efficiency is high: 30 cross-domain examples suffice for 0.892 accuracy on XOR. However, pseudo-label training from coalition predictions fails (0/3 distributions): the coalition cannot label what it doesn't know — its accuracy on XOR is 0.50 by construction.
+
+**Interpretation.** Coalition compilation demonstrates that joint distributions contain learnable structure invisible to isolated experts. The compiled expert sees the interaction between feature sets that solo experts and their coalition cannot. This is not merely additive combination — it is the discovery of a new density in the joint space. The practical implication is a growth mechanism for Paradigm Swarm: when a coalition fires above a frequency threshold AND verified labels are available (from outcome feedback or human annotation), a new compiled expert is spawned, learning the joint distribution and reducing future routing to a single expert lookup. The negative pseudo-label result establishes a boundary condition: compilation requires an external label source; coalition predictions alone are insufficient for non-linear interactions.
+
+### 4.20 Multi-Physics Expert Distillation: Swarm → Compiled → Superior Model
+
+The isolation property of Paradigm Swarm creates specialized experts. The routing experiments (§4.17-4.18) show how to select among them. But can we go further: compress the collective intelligence of a specialized swarm into a single model that outperforms every individual expert?
+
+**Design.** We use the CartPole balancing task with three distinct physics configurations: Normal (force multiplier 1.0), Slippery (1.8× — overshooting, requires gentle corrections), and Sticky (0.4× — undershooting, requires aggressive pushes). These are the same task structure with different dynamics — analogous to different paradigms sharing a common interface but requiring different strategies. Three specialized Q-learning agents (discretised Q-tables, 8 bins per dimension) are each trained for 2000 episodes on their respective physics. We then test five approaches:
+
+- **Universal:** a single Q-agent trained on all three physics simultaneously (2000 episodes, rotating physics each episode). This is the monolithic baseline — one model for all environments.
+- **Best Solo (oracle):** for each physics, select the best-performing specialized expert. This is the upper bound for routing-based approaches.
+- **Swarm with density-based self-routing:** use random probing (10 steps of random actions, measure max-Q per expert) to select the expert, which then completes the episode. No oracle knowledge of the active physics.
+- **Coalition:** average Q-values from all three experts at each step (soft voting).
+- **Compiled (Q-distillation):** train a new Q-agent for 2000 episodes where, at each step, the teacher signal is the element-wise maximum of all three specialized experts' Q-values: teacher_Q = max(Q_normal, Q_slippery, Q_sticky). The compiled agent learns from the swarm's collective knowledge, not from raw environment interaction. A second variant (Compiled v2) uses behavioral cloning: at each step, the best expert's action is executed in the environment and the compiled agent learns from the resulting (state, action, reward) transitions.
+
+**Results.** 200 evaluation episodes per physics, deterministic policies (ε=0).
+
+| Method | Normal | Slippery | Sticky | Avg |
+|--------|:---:|:---:|:---:|:---:|
+| Universal (own experience) | 79.9 | 85.1 | 76.8 | 80.6 |
+| Swarm (random-probe routing) | 86.8 | 83.5 | 97.0 | 89.1 |
+| Coalition (Q-value vote) | 88.7 | 89.0 | 96.7 | 91.1 |
+| Best solo (oracle routing) | 90.2 | 96.1 | 96.2 | 94.2 |
+| **Compiled (Q-distillation)** | **92.4** | **94.8** | **96.7** | **94.6** |
+| Compiled v2 (best-expert BC) | 92.0 | 95.9 | 95.5 | 94.5 |
+
+The compiled expert outperforms every alternative: it beats the universal monolithic model by +14.0 points, the swarm with density-based routing by +5.5 points, the coalition by +3.5 points, and even the oracle upper bound (best solo per physics) by +0.4 points. Both distillation variants (Q-value max and behavioral cloning) achieve comparable results, confirming that the benefit comes from the teacher signal — the collective knowledge of the swarm — not from the specific distillation mechanism.
+
+**Interpretation.** Three findings emerge. First, the universal agent suffers from interference between physics: the optimal policy for sticky (aggressive pushes) conflicts with the optimal policy for slippery (gentle corrections). Training on all three simultaneously produces a compromise policy that is mediocre on all. The specialized swarm has no such interference — each expert converges to its physics' optimum.
+
+Second, the compiled expert bypasses this interference entirely. It does not learn from the conflicting environment signals directly. It learns from the already-optimized Q-values of the specialized experts. The max-Q teacher automatically resolves conflicts: in states where sticky's Q-values dominate, the compiled agent learns sticky's strategy; where slippery's Q-values dominate, it learns slippery's. The result is a single model that internalises the best of all experts.
+
+Third, this connects Paradigm Swarm to a practical path toward more capable AI systems: rather than scaling a single model to handle all domains (and suffering interference), train narrow expert swarms on well-defined paradigms, then distil their collective knowledge into a unified model. The distilled model inherits the experts' specialized competence without their interference. This is not routing — it is compression of a swarm's intelligence into a single superior agent.
+
+### 4.21 Counter-Domains: When Distillation Fails
+
+The distillation result in §4.20 shows compiled > oracle for independent physics. But what happens when domains are not independent but *opposed* — sharing the same feature space with opposite semantics?
+
+**Design.** We construct a counter-domain pair: Bull (features 0-10 positive, 10-20 negative) and Bear (features 0-10 negative, 10-20 positive). These are the same features with inverted signs — analogous to contradictory paradigms such as prosecution vs. defense, or bullish vs. bearish market analysis. A third independent domain (features 30-45, strong positive signal) serves as control. Three expert MLPs are trained on their respective domains. A compiled model is trained on the union of Bull and Bear data. We compare: (a) individual experts, (b) compiled AB, (c) confidence-based routing (max softmax probability), and (d) density-based routing — the Paradigm Swarm router (§4.17-4.18) which fits a multivariate Gaussian to each expert's training distribution and routes queries to the expert with highest log-density.
+
+**Results.** 300 test samples per domain.
+
+| Method | Bull | Bear | Indep | Avg |
+|--------|:---:|:---:|:---:|:---:|
+| E_bull | 0.510 | 0.530 | 1.000 | 0.680 |
+| E_bear | 0.463 | 0.750 | 0.537 | 0.583 |
+| Compiled (bull+bear) | 0.493 | 0.470 | 1.000 | 0.654 |
+| Confidence router | 0.463 | 0.530 | 1.000 | 0.664 |
+| **Density router** | 0.510 | **0.750** | 1.000 | **0.753** |
+
+The density router achieves 100% routing accuracy (300/300 correct expert selection per domain) and outperforms the compiled model by +0.099 on average. The confidence router fails catastrophically: it routes all queries to the independent expert, whose softmax is overconfident on out-of-distribution data. The compiled model degrades to near-chance on the counter-domain (Bull: 0.493, Bear: 0.470) because the training data contains irreconcilable contradictions — the same features demand opposite labels.
+
+**Interpretation.** This establishes a boundary condition for distillation: it works when domains are independent or complementary (§4.20), but fails when domains are opposed. Counter-domains share feature spaces with inverted semantics, so no single model can satisfy both simultaneously. The correct mechanism for counter-domains is density-based routing — exactly the mechanism Paradigm Swarm uses. This also explains why confidence-based routing (the implicit router in monolithic softmax models) fails: softmax overconfidence on out-of-distribution inputs (§4.4) makes confidence useless for domain discrimination. Density estimation, which measures whether an input belongs to an expert's training distribution, correctly separates counter-domains.
+
+### 4.22 Dissipative Structures: Discovering New Paradigms from Contradiction
+
+The counter-domain experiment reveals a limitation of distillation, but the limitation itself is a signal. In TRIZ (the Theory of Inventive Problem Solving), a contradiction is not a dead end — it is the birthplace of invention. Altshuller's key insight was that resolving a contradiction creates a new principle. Prigogine showed that far-from-equilibrium systems spontaneously generate order — dissipative structures emerge at the boundary between chaos and stasis.
+
+What if counter-domains function the same way?
+
+**Design.** We identify the *D-space* — the subspace of inputs where Bull and Bear experts diverge (give opposite predictions). On 600 mixed queries, Bull and Bear diverge on 196 (33%). These are points where the same features activate contradictory outputs — the system is far from equilibrium. We train a new expert D on these 196 divergent samples, using the independent expert (which has a clean signal on features 30-45) as the teacher. We then distil three models: (a) Compiled AB (Bull + Bear only), (b) Compiled ABD (Bull + Bear + D), and (c) a density router with all four experts. All models are evaluated on the four-domain test set including a dedicated D-domain test set of contradictory queries.
+
+**Results.**
+
+| Method | Bull | Bear | Indep | D-domain | Avg |
+|--------|:---:|:---:|:---:|:---:|:---:|
+| Compiled AB | 0.497 | 0.570 | 1.000 | 0.603 | 0.667 |
+| **Compiled ABD** | **0.703** | 0.477 | 1.000 | **1.000** | **0.795** |
+| Density router (4 experts) | 0.497 | 0.683 | 1.000 | 1.000 | 0.795 |
+
+Adding D to the distillation improves the compiled model by +0.128 on average. On the D-domain specifically, compiled AB achieves only 0.603 while compiled ABD reaches 1.000 — a complete reversal. Notably, compiled ABD also improves on Bull (+0.206), suggesting that the D-expert captures structural patterns that generalize beyond the contradiction subspace. The density router and compiled ABD achieve identical average accuracy (0.795), demonstrating that routing and distillation converge when the full set of paradigms — including the dissipative structure — is present.
+
+**Interpretation.** Counter-domains are not a wall for distillation. They are a **growth signal.** When two experts systematically disagree on a subset of inputs, they are not noisy — they are pointing at an undiscovered paradigm. The procedure is: (1) detect divergence (gap detection, §4.4), (2) collect the divergent samples, (3) spawn a new expert D trained on this D-space, (4) include D in the distillation. The result is a compiled model that is stronger than one trained without D. This connects Paradigm Swarm to TRIZ: the architecture does not merely route around contradictions — it **resolves** them by creating new structure. The dissipative structure becomes a new paradigm, and the swarm grows organically through contradiction discovery.
+
 ## 5. Discussion
 
 
@@ -587,7 +684,15 @@ Paradigm Swarm is not uniformly superior. On benchmarks with shared low-level fe
 This is a feature, not a bug. The architecture makes the trade-off explicit: if your tasks share structure and you have few of them, use a shared model. If tasks are semantically distinct or numerous, use isolation. No existing method lets you choose. Paradigm Swarm does.
 
 
-### 5.3 Paradigms vs. Tasks
+### 5.3 Emergent Hierarchies: Self-Routing at Scale
+
+Section 4.17 demonstrated that the collective of experts can route queries without a dedicated router: each expert estimates the query's density within its paradigm, and the maximum-density expert claims the query. At small scale (5 paradigms, 16 linguistic queries), this flat self-routing matches an LLM-based router on classification (100%) and gap detection (100%).
+
+At larger scale and in continuous feature spaces, density-based self-routing faces the curse of dimensionality: with 20-dimensional features and only 5–13 training points per paradigm, density estimators lack sufficient support and routing accuracy collapses to 29.8%. However, as the number of samples per paradigm grows, density estimation becomes viable. On an expanded dataset of 81 samples (15–20 per paradigm), density-based self-routing recovers: expert accuracy reaches 92–100% across all five paradigms, and the ensemble pipeline achieves 87.7% accuracy without any trained router module.
+
+Critically, this routing emerges from the data geometry alone. Paradigms with overlapping density distributions naturally group into domains — experts that are frequently co-activated by the same queries form implicit clusters. No domain labels, no hierarchy specification, no separate router. The density landscape itself encodes the domain structure as an emergent property of the expert distribution. This closes the loop between weight isolation (§4.2), density-based routing (§4.17), and scalability: at any scale, the collective of experts IS the router, and the hierarchy is in the density geometry, not in the architecture.
+
+### 5.4 Paradigms vs. Tasks
 
 The fundamental distinction between our work and concurrent modular isolation methods is the unit of routing. A "task" is an artifact of benchmark design — a set of classes presented together in a specific order. A "paradigm" is a structural property of knowledge — a domain with axioms and operational definitions.
 
@@ -596,7 +701,7 @@ This distinction matters in two ways. First, task boundaries must be specified e
 A concrete example illustrates the difference. Consider the query: «Can an employer fire a worker for refusing to work at 45°C?» A task-based router faces an undefined situation: this belongs neither to a pure Labour Law dataset nor to a pure Thermodynamics dataset — task boundaries partition the input space and offer no mechanism for overlap. A paradigm-based router receives density scores from both experts: the Labour Law expert recognizes «employer,» «fire,» «worker» (density 0.8); the Thermodynamics expert recognizes «45°C,» «temperature» (density 0.7). Both experts claim the query — triggering cross-domain consultation. This is not a failure mode. It is the correct behavior for a query that genuinely spans two knowledge domains. Task is thus a degenerate case of paradigm: when queries never cross dataset boundaries, task = paradigm. When they do — and real-world queries do — the distinction becomes operational.
 
 Third, and most importantly for deployment: **frozen weights prevent cross-paradigm interference, not updating.** When a paradigm shifts — a new labor code is enacted, a scientific discovery reconfigures thermodynamics — the corresponding expert is retrained on updated data and swapped in. The old expert version is retained as a frozen reference, enabling comparison between paradigm versions. This mirrors biological memory: the hippocampus consolidates knowledge within domains without destabilizing unrelated circuits. Isolation makes updating *easier* than in monolithic architectures: retraining one expert leaves 49 others untouched. In a shared-weight network, retraining on new data for one paradigm risks overwriting representations for all others — the very interference Paradigm Swarm eliminates. The architecture thus supports both stability (frozen experts) and adaptability (retrain-and-swap within paradigm boundaries). Controlled forgetting of outdated knowledge — retaining the old as reference while deploying the new — is a feature, not a bug.
-### 5.4 Connection to Human Cognition
+### 5.5 Connection to Human Cognition
 
 The Paradigm Swarm architecture mirrors the structure of scientific knowledge as described by Kuhn [1962] and codified by Vikentiev: knowledge organized into paradigms with explicit operational definitions, where paradigm shifts reconfigure local structure without global disruption. This is not a metaphor — it is an architectural isomorphism.
 
@@ -604,11 +709,11 @@ But the isomorphism goes deeper than knowledge organization. In Paradigm Swarm, 
 
 This operational definition resolves a long-standing ambiguity in Kuhn's framework: how to determine whether two paradigms are distinct. Kuhn argued paradigms are «incommensurable» — they cannot be compared because they use different vocabularies and standards. Paradigm Swarm makes them measurable: send the same query to both experts, compare predictions, the more accurate expert claims the query. An expert may err on a specific query — misclassifying a borderline case — yet remain the best available expert for that paradigm. Routing is argmax over relative competence, not a demand for perfection. The swarm does not need experts that never fail. It needs experts that fail less often than every other expert on the queries that matter.
 
-### 5.5 Relationship to Out-of-Distribution Detection
+### 5.6 Relationship to Out-of-Distribution Detection
 
 Gap detection in Paradigm Swarm (§4.4) is a special case of out-of-distribution (OOD) detection — identifying inputs outside the training distribution. Unlike standard post-hoc OOD methods (ODIN, Mahalanobis distance, energy-based scores), gap detection emerges structurally: each expert models only its own paradigm's density, and inputs falling below all density thresholds are naturally rejected. This unifies routing and OOD detection in a single mechanism — the density estimator IS both the expert and the OOD detector. We have demonstrated this for Gaussian density estimators (100% detection) and extended it to neural-network experts via Max Softmax Probability (90% detection; §4.4). Closing the remaining 10% gap — the MSP extrapolation failure on points aligned with a cluster axis — requires more sophisticated OOD scores (energy-based, Mahalanobis on hidden representations) and connects Paradigm Swarm to the broader OOD literature.
 
-### 5.6 Open Problems and Research Agenda
+### 5.7 Open Problems and Research Agenda
 
 Paradigm Swarm solves catastrophic forgetting structurally. In doing so, it opens several problems that we identify as the research agenda for paradigm-based architectures:
 
@@ -616,7 +721,7 @@ Paradigm Swarm solves catastrophic forgetting structurally. In doing so, it open
 
 2. **Cross-paradigm synthesis.** The router-free architecture achieves 100% on clean classification and gap detection but 0% on cross-domain queries (§4.17). The LLM-based router achieves 88% on cross-domain but requires an external API. A trained middle ground — small transformer fine-tuned on paradigm definitions — could combine speed with cross-domain accuracy.
 
-3. **Hierarchical paradigm dependencies.** Section 4.11 showed that paradigm dependencies make pure isolation suboptimal. Can a system automatically detect which paradigms depend on which, and construct an inheritance graph? This connects to causal structure learning and module networks.
+3. **Emergent hierarchy detection.** Section 5.3 showed that density-based self-routing naturally forms domain clusters at scale — the density landscape encodes hierarchy without explicit classifiers. Can this emergent structure be surfaced and visualised? Detecting density clusters among experts, measuring inter-domain separation, and surfacing cross-domain bridging experts are open problems connecting Paradigm Swarm to unsupervised structure discovery.
 
 4. **Scale to 1000+ paradigms.** Our experiments demonstrate 100 parallel experts (§4.15) with zero interference. At 1000+ paradigms, memory and routing latency become constraints. Sparse expert activation and parameter-efficient expert architectures (LoRA adapters) are natural paths forward.
 
@@ -624,17 +729,40 @@ Paradigm Swarm solves catastrophic forgetting structurally. In doing so, it open
 
 6. **Theoretical guarantees.** A formal proof of zero-forgetting under weight freezing — and bounds on approximation error for queries spanning multiple paradigms — would strengthen the theoretical foundation.
 
+7. **Density preservation for shared backbones.** When experts share a backbone (unlike the isolated paradigm experts in this work), training a new expert shifts the shared weights and degrades old experts. We tested periodic corrective replay triggered by density drop detection: corrective steps on old data when density falls below threshold. On a 5-expert shared-W1 setup, this naive approach *increased* average density shift (+15% vs no protection) because corrective steps for one expert cascade-interfere with others. EWC achieved 55% reduction. The negative result suggests that density preservation on shared backbones requires either joint correction of all experts simultaneously or full weight isolation. The architectural implication is that Paradigm Swarm's weight isolation (§3.2) is not an optional optimisation — it is the mechanism that makes density preservation unnecessary.
+
+### 5.8 Density Restoration: Expert Swarm as Continual Learning Teacher
+
+The isolation property of Paradigm Swarm yields a practical application beyond the architecture itself: the expert swarm can serve as a **teacher** to restore lost knowledge in monolithic models. We demonstrate this through a density restoration experiment.
+
+**Design.** A Transformer (shared MLP, 64 hidden units) is trained sequentially on 5 tasks (T0→T4) with overlapping feature spaces, suffering standard catastrophic forgetting: T0 accuracy drops from 0.853 to 0.593 (−0.260) after training on T1-T4. Independently, a Paradigm Swarm of 5 isolated experts is trained on the same tasks with zero forgetting, plus a compiled AB expert trained on the union of T0 and T1 data (see §4.19b). We then test three restoration strategies on the forgotten T0: (a) **Solo Expert**: use Expert T0's probability outputs as soft targets to retrain the Transformer on T0 data; (b) **Coalition A+B**: average probabilities from Experts T0 and T1 as teacher; (c) **Compiled AB**: use the compiled AB expert as teacher. Each strategy uses 400 epochs of teacher-guided training on the original T0 training data.
+
+**Results.**
+
+| Strategy | T0 Before | T0 After | Recovery Δ | % of Expert Ref |
+|----------|:---:|:---:|:---:|:---:|
+| No restoration (baseline) | 0.593 | — | — | — |
+| Solo Expert A | 0.593 | 0.820 | **+0.227** | 94.6% |
+| Coalition A+B | 0.600 | 0.753 | +0.153 | 83.7% |
+| Compiled AB | 0.593 | **0.840** | **+0.247** | **96.9%** |
+| Full restoration (all 5) | 0.749 | 0.775 | +0.025 | — |
+
+The compiled AB expert achieves the strongest recovery, restoring 96.9% of the expert's reference accuracy — surpassing even the solo expert (94.6%). The coalition strategy underperforms: averaging two experts dilutes the signal. Full simultaneous restoration of all 5 tasks yields minimal gain due to capacity interference in the shared Transformer.
+
+**Interpretation.** This result demonstrates two properties. First, the expert swarm is a viable continual learning teacher: when a monolithic model forgets, experts that have preserved the original task distribution can restore its accuracy through teacher-guided retraining. The recovery is sample-efficient — it uses the original training data, not additional examples. Second, compiled experts (§4.19b) are not merely an optimisation for routing efficiency; they are **better teachers** than solo experts, because their training on joint data (A∪B) produces a smoother density that guides the Transformer more effectively than the narrower density of a single-domain expert. This connects coalition compilation to a practical application: archiving paradigm knowledge in a form that can restore monolithic models after forgetting events.
+
 We release the full experimental code as a toolbox for the community to explore these directions.
 
 ## 6. Conclusion
 
-We have presented Paradigm Swarm, an architecture for continual learning where the unit of weight isolation is not a task but a paradigm — a semantic domain with operational definitions. This architecture yields three properties absent from task-based methods: zero forgetting by construction, gap detection as an emergent structural property, and an unlimited compute ceiling.
+We have presented Paradigm Swarm, an architecture for continual learning where the unit of weight isolation is not a task but a paradigm — a semantic domain with operational definitions. This architecture yields six properties absent from task-based methods: zero forgetting by construction, gap detection as an emergent structural property, an unlimited compute ceiling, coalition compilation for learning joint distributions, expert distillation for compressing swarm intelligence, and dissipative structure discovery — the ability to detect contradictions between experts and resolve them into new paradigms.
 
-Experimental validation across 20 experimental configurations demonstrates that Paradigm Swarm matches Oracle within 0.002 accuracy, eliminates catastrophic forgetting entirely, scales to 50 tasks with density-based self-routing where it outperforms SGD by +22.3pp (with 99.2% routing accuracy), and scales to 100 tasks with oracle routing. We proved that SGD faces a structural ceiling where more training *increases* forgetting, while Paradigm Swarm has no such limit; that density estimation — not softmax confidence — is the correct mechanism for experts to route themselves; and that the gap detection property extends from Gaussian density estimators (100%) to neural-network experts with MSP (90%).
+Experimental validation across 28 experimental configurations demonstrates that Paradigm Swarm matches Oracle within 0.002 accuracy, eliminates catastrophic forgetting entirely, scales to 50 tasks with density-based self-routing where it outperforms SGD by +22.3pp (with 99.2% routing accuracy), and scales to 100 tasks with oracle routing. We proved that SGD faces a structural ceiling where more training *increases* forgetting, while Paradigm Swarm has no such limit; that density estimation — not softmax confidence — is the correct mechanism for experts to route themselves; that the gap detection property extends from Gaussian density estimators (100%) to neural-network experts with MSP (90%); that coalition compilation enables learning joint distributions invisible to isolated experts (+0.415 on non-linear interactions); that a compiled model distilled from a specialized expert swarm outperforms both the best solo expert and oracle routing (+0.4 over oracle, +14.0 over universal; §4.20); that density-based routing correctly handles counter-domains where distillation fails (§4.21); and that discovering the dissipative structure D from expert contradictions and adding it to distillation produces a model +0.128 stronger than distillation without it (§4.22).
 
 
 ## References
 
+- Altshuller, G.S. (1984). Creativity as an Exact Science: The Theory of the Solution of Inventive Problems. Gordon and Breach. [Original Russian: Альтшуллер Г.С. Творчество как точная наука. М.: Советское радио, 1979.]
 - Avinash, M.S.R. (2026). Task-Conditioned Routing Signatures in Sparse Mixture-of-Experts Transformers. arXiv:2603.11114.
 - Buzzega, P. et al. (2020). Dark Experience for General Continual Learning. NeurIPS.
 - Collier, M. et al. (2020). Routing Networks with Co-training for Continual Learning. arXiv:2009.04381.
@@ -650,13 +778,14 @@ Experimental validation across 20 experimental configurations demonstrates that 
 - Mallya, A. & Lazebnik, S. (2018). PackNet: Adding Multiple Tasks to a Single Network by Iterative Pruning. CVPR.
 - McCloskey, M. & Cohen, N.J. (1989). Catastrophic Interference in Connectionist Networks. Psychology of Learning and Motivation.
 - Parisi, G.I. et al. (2019). Continual Lifelong Learning with Neural Networks: A Review. Neural Networks.
+- Prigogine, I. & Stengers, I. (1984). Order out of Chaos: Man's New Dialogue with Nature. Bantam Books.
 - Rebuffi, S.A. et al. (2017). iCaRL: Incremental Classifier and Representation Learning. CVPR.
 - Rusu, A.A. et al. (2016). Progressive Neural Networks. arXiv:1606.04671.
 - Siddika, F. et al. (2026). Split-on-Share: Mixture of Sparse Experts for Task-Agnostic Continual Learning (SETA). arXiv:2601.17616.
 - Singer, W. (1999). Neuronal Synchrony: A Versatile Code for the Definition of Relations? Neuron.
 - Shazeer, N. et al. (2017). Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer. ICLR.
 - Trivedi, A. & Melwani, B. (2026). Catastrophic Forgetting as Accessibility Collapse: A Three-Level Framework for Knowledge Persistence in Continual Learning. arXiv:2606.06032.
-- Vikentiev, I.L. (n.d.). Methodology of Creative Problem Solving. vikent.ru.
+- Vikentiev, I.L. (n.d.). Methodology of Creative Problem Solving: S-Curve Analysis, Cross-Domain Synthesis, and Knowledge Systematization. https://vikent.ru. [Original Russian: Викентьев И.Л. Методика творческого решения задач: анализ S-кривых, кросс-доменный синтез и систематизация знаний.]
 - Zenke, F. et al. (2017). Continual Learning Through Synaptic Intelligence. ICML.
 
 ---

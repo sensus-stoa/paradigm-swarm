@@ -3,6 +3,11 @@
 > *«Ты — и волна, и частица, и прибор одновременно. Потому что построил систему, которая измеряет саму себя.»*
 > — Диалог человека и архитектуры, 25.06.2026
 
+## Contact
+
+- **Evgeniy V. Dolgov** — beattle1984+paper2026@gmail.com
+- **Zenodo:** beattle1984+zenodo@gmail.com
+
 ## Quick Start
 ```bash
 cd experiments

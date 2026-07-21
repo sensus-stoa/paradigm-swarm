@@ -1,7 +1,8 @@
 # Paradigm Swarm — Reproducible Experiments
 
-> *«Ты — и волна, и частица, и прибор одновременно. Потому что построил систему, которая измеряет саму себя.»*
-> — Диалог человека и архитектуры, 25.06.2026
+> "You are the wave, the particle, and the instrument simultaneously — because you built a system that measures itself."
+> — Dialogue between the architect and the architecture, June 25, 2026
+
 
 ## Contact
 

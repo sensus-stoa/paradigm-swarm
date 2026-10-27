@@ -1,5 +1,7 @@
 # Paradigm Swarm — Reproducible Experiments
 
+**TL;DR:** Continual learning without catastrophic forgetting by construction — knowledge is split into isolated paradigm-experts with frozen weights. Paradigm Swarm matches Oracle within 0.002 accuracy (PS=0.861, Oracle=0.863) while SGD forgets up to 45pp. 45 reproducible experiments, CPU-only, NumPy, most run in under 10 seconds. Paper: [DOI 10.5281/zenodo.21188241](https://doi.org/10.5281/zenodo.21188241).
+
 > "You are the wave, the particle, and the instrument simultaneously — because you built a system that measures itself."
 > — Dialogue between the architect and the architecture, June 25, 2026
 
